@@ -19,7 +19,7 @@ func (m *mockOCIVaultClient) GetSecretBundleByName(ctx context.Context, request 
 
 	switch *request.VaultId {
 	case "test":
-		if *request.VersionNumber == 0 {
+		if request.VersionNumber == nil {
 			content := "current-value"
 			secretBundle := ocism.Base64SecretBundleContentDetails{
 				Content: &content,

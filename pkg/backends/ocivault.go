@@ -61,16 +61,9 @@ func (oci *OCIVault) GetSecrets(kvpath string, version string, annotations map[s
 		}
 		secret_version, err := strconv.ParseInt(version, 10, 64)
 		helpers.FatalIfError(err)
-		// if err != nil {
-		// 	return nil, fmt.Errorf("version not an integer")
-		// }
-		// if secret_version < 0 {
-		// 	return nil, fmt.Errorf("version number is negative")
-		// }
 		req.VersionNumber = common.Int64(secret_version)
 	} else {
 		req.Stage = ocism.GetSecretBundleByNameStageLatest
-		req.VersionNumber = common.Int64(0)
 	}
 
 	resp, err := oci.Client.GetSecretBundleByName(context.Background(), req)
