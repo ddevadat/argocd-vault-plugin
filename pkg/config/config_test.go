@@ -224,6 +224,12 @@ fDGt+yaf3RaZbVwHSVLzxiXGsu1WQJde3uJeNh5c6z+5
 			},
 			"*backends.KubernetesSecret",
 		},
+		{
+			map[string]interface{}{
+				"AVP_TYPE": "ocivault",
+			},
+			"*backends.OCIVault",
+		},
 	}
 	for _, tc := range testCases {
 		for k, v := range tc.environment {

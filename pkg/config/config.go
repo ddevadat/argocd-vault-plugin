@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
 
 	gcpsm "cloud.google.com/go/secretmanager/apiv1"
 	"github.com/1Password/connect-sdk-go/connect"
@@ -25,6 +26,9 @@ import (
 	awssm "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/hashicorp/vault/api"
 	ksm "github.com/keeper-security/secrets-manager-go/core"
+	"github.com/oracle/oci-go-sdk/v65/common"
+	ociauth "github.com/oracle/oci-go-sdk/v65/common/auth"
+	ocism "github.com/oracle/oci-go-sdk/v65/secrets"
 	"github.com/spf13/viper"
 	ycsdk "github.com/yandex-cloud/go-sdk"
 	"github.com/yandex-cloud/go-sdk/iamkey"
@@ -47,6 +51,7 @@ var backendPrefixes []string = []string{
 	"aws",
 	"azure",
 	"google",
+	"oci",
 	"sops",
 	"op_connect",
 	"k8s_secret",
@@ -178,6 +183,28 @@ func New(v *viper.Viper, co *Options) (*Config, error) {
 
 			client := awssm.NewFromConfig(s)
 			backend = backends.NewAWSSecretsManagerBackend(client)
+		}
+	case types.OCIVaultbackend:
+		{
+			var client ocism.SecretsClient
+			var err error
+			// Try using DefaultConfigProvider
+			client, err = ocism.NewSecretsClientWithConfigurationProvider(common.DefaultConfigProvider())
+			if err == nil {
+				utils.VerboseToStdErr("Successfully created OCI Secrets client with DefaultConfigProvider\n")
+			} else {
+			// Fallback to InstancePrincipalConfigurationProvider if DefaultConfigProvider fails
+				utils.VerboseToStdErr("DefaultConfigProvider failed with error %v", err)
+				provider, err := ociauth.InstancePrincipalConfigurationProvider()
+				if err != nil {
+					utils.VerboseToStdErr("Error creating InstancePrincipalConfigurationProvider: %v", err)
+				}
+				client, err = ocism.NewSecretsClientWithConfigurationProvider(provider)
+				if err != nil {
+					utils.VerboseToStdErr("Error creating Secrets client with InstancePrincipalConfigurationProviderr: %v", err)
+				}
+			}
+			backend = backends.NewOCIVaultBackend(client)
 		}
 	case types.GCPSecretManagerbackend:
 		{

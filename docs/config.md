@@ -67,13 +67,13 @@ Make sure that these environment variables are available to the plugin when runn
 environment variables take precedence over configuration pulled from a Kubernetes Secret or a file.
 
 ### Full List of Supported Parameters
-We support all the backend specific environment variables each backend's SDK will accept (e.g, `VAULT_NAMESPACE`, `AWS_REGION`, etc). Refer to the [specific backend's documentation](../backends) for details.
+We support all the backend specific environment variables each backend's SDK will accept (e.g, `VAULT_NAMESPACE`, `AWS_REGION`, etc). Refer to the [specific backend's documentation](./backends.md) for details.
 
 We also support these AVP specific variables:
 
 | Name                       | Description                                         | Notes                                                                                                                                                                        |
 | -------------------------- |-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| AVP_TYPE                   | The type of Vault backend                           | Supported values: `vault`, `ibmsecretsmanager`, `awssecretsmanager`, `gcpsecretmanager`, `yandexcloudlockbox` and `1passwordconnect`                                         |
+| AVP_TYPE                   | The type of Vault backend                           | Supported values: `vault`, `ibmsecretsmanager`, `awssecretsmanager`, `gcpsecretmanager`, `yandexcloudlockbox` , `1passwordconnect` and `ocivault`                                         |
 | AVP_KV_VERSION             | The vault secret engine                             | Supported values: `1` and `2` (defaults to 2). KV_VERSION will be ignored if the `avp.kubernetes.io/kv-version` annotation is present in a YAML resource.                    |
 | AVP_AUTH_TYPE              | The type of authentication                          | Supported values: vault: `approle, github, k8s, token`. Only honored for `AVP_TYPE` of `vault`                                                                               |
 | AVP_GITHUB_TOKEN           | Github token                                        | Required with `AUTH_TYPE` of `github`                                                                                                                                        |

@@ -38,6 +38,7 @@ const (
 	AWSSecretsManagerbackend    = "awssecretsmanager"
 	GCPSecretManagerbackend     = "gcpsecretmanager"
 	AzureKeyVaultbackend        = "azurekeyvault"
+	OCIVaultbackend             = "ocivault"
 	Sopsbackend                 = "sops"
 	YandexCloudLockboxbackend   = "yandexcloudlockbox"
 	DelineaSecretServerbackend  = "delineasecretserver"

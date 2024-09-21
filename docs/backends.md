@@ -492,6 +492,70 @@ data:
   password-old: <path:keyvault#password#33740fc26214497f8904d93f20f7db6d>
 ```
 
+### Oracle Cloud Infrastruture Vault
+
+##### OCI Authentication
+Refer to the [Use Instance Principal authentication](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm#sdk_authentication_methods_instance_principaldita) in the OCI SDK for Go.
+
+* create a dynamic group with the appropriate rules to include the compute instance where AVP will be running.
+* Create a new policy that allows the dynamic group to use secret-family in the functions related compartment. e.g
+```
+Allow dynamic-group <dynamic-group-name> to inspect instances in compartment <compartment-name>
+```
+
+For OCI, `path` format is `vault/<vaultocid>/secrets/<secretname>`
+
+These are the parameters for OCI:
+```
+AVP_TYPE: ocivault
+```
+
+##### Examples
+
+###### Path Annotation
+
+```yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: test-secret
+  annotations:
+    avp.kubernetes.io/path: "vault/ocid1.vault.aaaaa/secrets/demo-secret"
+type: Opaque
+data:
+  password: <demo-secret>
+```
+
+###### Inline Path
+
+```yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: test-secret
+type: Opaque
+data:
+  password: <path:vault/ocid1.vault.aaaaa/secrets/demo-secret#demo-secret
+```
+
+
+###### Versioned secrets
+
+```yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: test-secret
+  annotations:
+    avp.kubernetes.io/path: "vault/ocid1.vault.aaaaa/secrets/demo-secret"
+    avp.kubernetes.io/secret-version: "1"
+type: Opaque
+data:
+  current-password: <demo-secret>
+  current-password-again: <path:vault/ocid1.vault.aaaaa/secrets/demo-secret#demo-secret#1
+  password-old: <path:vault/ocid1.vault.aaaaa/secrets/demo-secret#demo-secret#2
+```
+
 ### SOPS
 ##### SOPS Authentication
 Refer to the [SOPS project page](https://github.com/mozilla/sops) for authentication options/environment variables.
