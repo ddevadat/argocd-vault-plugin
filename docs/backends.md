@@ -494,7 +494,28 @@ data:
 
 ### Oracle Cloud Infrastruture Vault
 
-##### OCI Authentication
+##### OCI Authentication - API Key Based
+For API Key based Authentication, these are the required parameters:
+```
+AVP_TYPE: ocivault
+AVP_OCI_TENANCY": "ocid1.tenancy.oc1..aaaaaaaa"
+AVP_OCI_USER": "ocid1.user.oc1..aaaaaaaa"
+AVP_OCI_REGION": "test-region"
+AVP_OCI_FINGERPRINT": "test-fingerprint"
+AVP_OCI_KEY_FILE": `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCyDz0+WvWGmcym
+OEBQ0zhWO1Abs/UQ1v0A7kXQpTgwAFKO0SR56jJBII1VmBuctDUYkdO55FvAuhNv
+-----END PRIVATE KEY-----`
+AVP_OCI_KEY_PASSPHRASE: "<key_passphrase>"   # This can be omitted if there is no key passphrase
+```
+
+
+**Note**: API Key based authentication will be tried first. If its not available , it will be try with Instance principal based authentication
+
+
+##### OCI Authentication - Instance Principal
+
+
 Refer to the [Use Instance Principal authentication](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm#sdk_authentication_methods_instance_principaldita) in the OCI SDK for Go.
 
 * create a dynamic group with the appropriate rules to include the compute instance where AVP will be running.

@@ -191,12 +191,12 @@ func New(v *viper.Viper, co *Options) (*Config, error) {
 			// Try using DefaultConfigProvider
 
 			p1 := common.NewRawConfigurationProvider(
-				os.Getenv("OCI_TENANCY"),
-				os.Getenv("OCI_USER"),
-				os.Getenv("OCI_REGION"),
-				os.Getenv("OCI_FINGERPRINT"),
-				os.Getenv("OCI_KEY_FILE"),
-			    common.String((os.Getenv("OCI_KEY_PASSPHRASE"))))
+				v.GetString(types.EnvOCITenancy),
+				v.GetString(types.EnvOCIUser),
+				v.GetString(types.EnvOCIRegion),
+				v.GetString(types.EnvOCIFingerprint),
+				v.GetString(types.EnvOCIKeyFile),
+			    common.String(v.GetString(types.EnvOCIKeyPassphrase)))
 			client, err = ocism.NewSecretsClientWithConfigurationProvider(p1)
 			if err == nil {
 				utils.VerboseToStdErr("Successfully created OCI Secrets client with DefaultConfigProvider\n")

@@ -11,11 +11,6 @@ import (
 	ocism "github.com/oracle/oci-go-sdk/v65/secrets"
 )
 
-// const (
-// 	AWS_CURRENT  string = "AWSCURRENT"
-// 	AWS_PREVIOUS string = "AWSPREVIOUS"
-// )
-
 var OCIPath, _ = regexp.Compile(`vault/(?P<vaultid>.+)/secrets/(?P<secretname>.+)`)
 
 type OCIVaultIface interface {

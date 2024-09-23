@@ -227,11 +227,11 @@ fDGt+yaf3RaZbVwHSVLzxiXGsu1WQJde3uJeNh5c6z+5
 		{
 			map[string]interface{}{
 				"AVP_TYPE": "ocivault",
-				"OCI_TENANCY": "ocid1.tenancy.oc1..aaaaaaaa",
-				"OCI_USER": "ocid1.user.oc1..aaaaaaaa",
-				"OCI_REGION": "test-region",
-				"OCI_FINGERPRINT": "test-fingerprint",
-				"OCI_KEY_FILE": `-----BEGIN PRIVATE KEY-----
+				"AVP_OCI_TENANCY": "ocid1.tenancy.oc1..aaaaaaaa",
+				"AVP_OCI_USER": "ocid1.user.oc1..aaaaaaaa",
+				"AVP_OCI_REGION": "test-region",
+				"AVP_OCI_FINGERPRINT": "test-fingerprint",
+				"AVP_OCI_KEY_FILE": `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCyDz0+WvWGmcym
 OEBQ0zhWO1Abs/UQ1v0A7kXQpTgwAFKO0SR56jJBII1VmBuctDUYkdO55FvAuhNv
 WTQcxi0WjVejZ7npNhyU1vcDVmJGmVc1vgb6Jo+pfDGq/EnkaNthpE50+jPeA3jD

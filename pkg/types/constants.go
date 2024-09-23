@@ -31,6 +31,12 @@ const (
 	EnvAvpDelineaUser      = "AVP_DELINEA_USER"
 	EnvAvpDelineaPassword  = "AVP_DELINEA_PASSWORD"
 	EnvAvpDelineaDomain    = "AVP_DELINEA_DOMAIN"
+	EnvOCITenancy          = "AVP_OCI_TENANCY"
+	EnvOCIUser             = "AVP_OCI_USER"
+	EnvOCIRegion           = "AVP_OCI_REGION"
+	EnvOCIFingerprint      = "AVP_OCI_FINGERPRINT"
+	EnvOCIKeyFile          = "AVP_OCI_KEY_FILE"
+	EnvOCIKeyPassphrase    = "AVP_OCI_KEY_PASSPHRASE"
 
 	// Backend and Auth Constants
 	VaultBackend                = "vault"
