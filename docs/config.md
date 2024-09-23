@@ -90,7 +90,12 @@ We also support these AVP specific variables:
 | AVP_YCL_KEY_ID             | Yandex Cloud Lockbox service account Key ID         | Required with `TYPE` of `yandexcloudlockbox`                                                                                                                                 |
 | AVP_YCL_PRIVATE_KEY        | Yandex Cloud Lockbox service account private key    | Required with `TYPE` of `yandexcloudlockbox`                                                                                                                                 |
 | AVP_PATH_VALIDATION        | Regular Expression to validate the Vault path       | Optional. Can be used for e.g. to prevent path traversals.                                                                                                                   |
-
+| AVP_OCI_TENANCY                 | OCI Vault tenancy id                          | Only valid with `TYPE` `ocivault`                                                                                                                                   |
+| AVP_OCI_USER                 | OCI Vault user id                          | Only valid with `TYPE` `ocivault`                                                                                                                                   |
+| AVP_OCI_REGION                 | OCI Vault region                         | Only valid with `TYPE` `ocivault`                                                                                                                                   |
+| AVP_OCI_FINGERPRINT                 | OCI Vault user fingerprint                         | Only valid with `TYPE` `ocivault`                                                                                                                                   |
+| AVP_OCI_KEY_FILE                 | OCI Vault api private key                         | Only valid with `TYPE` `ocivault`                                                                                                                                   |
+| AVP_OCI_KEY_PASSPHRASE                 | OCI Vault api private key passphrase                        | Only valid with `TYPE` `ocivault`                                                                                                                                   |
 ### Full List of Supported Annotation
 
 We support several different annotations that can be used inside a kubernetes resource. These annotations will override any corresponding configuration set via Environment Variable or Configuration File.
