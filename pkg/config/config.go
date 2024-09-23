@@ -189,7 +189,15 @@ func New(v *viper.Viper, co *Options) (*Config, error) {
 			var client ocism.SecretsClient
 			var err error
 			// Try using DefaultConfigProvider
-			client, err = ocism.NewSecretsClientWithConfigurationProvider(common.DefaultConfigProvider())
+
+			p1 := common.NewRawConfigurationProvider(
+				os.Getenv("OCI_TENANCY"),
+				os.Getenv("OCI_USER"),
+				os.Getenv("OCI_REGION"),
+				os.Getenv("OCI_FINGERPRINT"),
+				os.Getenv("OCI_KEY_FILE"),
+			    common.String((os.Getenv("OCI_KEY_PASSPHRASE"))))
+			client, err = ocism.NewSecretsClientWithConfigurationProvider(p1)
 			if err == nil {
 				utils.VerboseToStdErr("Successfully created OCI Secrets client with DefaultConfigProvider\n")
 			} else {
@@ -206,6 +214,7 @@ func New(v *viper.Viper, co *Options) (*Config, error) {
 			}
 			backend = backends.NewOCIVaultBackend(client)
 		}
+
 	case types.GCPSecretManagerbackend:
 		{
 			ctx := context.Background()
