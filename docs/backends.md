@@ -521,7 +521,7 @@ Refer to the [Use Instance Principal authentication](https://docs.oracle.com/en-
 * create a dynamic group with the appropriate rules to include the compute instance where AVP will be running.
 * Create a new policy that allows the dynamic group to use secret-family in the functions related compartment. e.g
 ```
-Allow dynamic-group <dynamic-group-name> to inspect instances in compartment <compartment-name>
+Allow dynamic-group <dynamic-group-name> to inspect secret-family in compartment <compartment-name>
 ```
 
 For OCI, `path` format is `vault/<vaultocid>/secrets/<secretname>`
