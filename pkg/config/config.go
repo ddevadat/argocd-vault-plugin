@@ -29,6 +29,7 @@ import (
 	"github.com/oracle/oci-go-sdk/v65/common"
 	ociauth "github.com/oracle/oci-go-sdk/v65/common/auth"
 	ocism "github.com/oracle/oci-go-sdk/v65/secrets"
+	ocivault "github.com/oracle/oci-go-sdk/v65/vault"
 	"github.com/spf13/viper"
 	ycsdk "github.com/yandex-cloud/go-sdk"
 	"github.com/yandex-cloud/go-sdk/iamkey"
@@ -186,7 +187,18 @@ func New(v *viper.Viper, co *Options) (*Config, error) {
 		}
 	case types.OCIVaultbackend:
 		{
-			var client ocism.SecretsClient
+
+			if !v.IsSet(types.EnvOCIVaultId) ||
+				!v.IsSet(types.EnvOCIVaultCompartmentId) {
+				return nil, fmt.Errorf(
+					"%s and %s are required for OCI Vault Service",
+					types.EnvOCIVaultId,
+					types.EnvOCIVaultCompartmentId,
+				)
+			}
+
+			var secret_client ocism.SecretsClient
+			var vault_client ocivault.VaultsClient
 			var err error
 			// Try using DefaultConfigProvider
 
@@ -197,7 +209,8 @@ func New(v *viper.Viper, co *Options) (*Config, error) {
 				v.GetString(types.EnvOCIFingerprint),
 				v.GetString(types.EnvOCIKeyFile),
 			    common.String(v.GetString(types.EnvOCIKeyPassphrase)))
-			client, err = ocism.NewSecretsClientWithConfigurationProvider(p1)
+			secret_client, _ = ocism.NewSecretsClientWithConfigurationProvider(p1)
+			vault_client, err = ocivault.NewVaultsClientWithConfigurationProvider(p1)
 			if err == nil {
 				utils.VerboseToStdErr("Successfully created OCI Secrets client with DefaultConfigProvider\n")
 			} else {
@@ -207,12 +220,13 @@ func New(v *viper.Viper, co *Options) (*Config, error) {
 				if err != nil {
 					utils.VerboseToStdErr("Error creating InstancePrincipalConfigurationProvider: %v", err)
 				}
-				client, err = ocism.NewSecretsClientWithConfigurationProvider(provider)
+				secret_client, _ = ocism.NewSecretsClientWithConfigurationProvider(provider)
+				vault_client, err = ocivault.NewVaultsClientWithConfigurationProvider(provider)
 				if err != nil {
 					utils.VerboseToStdErr("Error creating Secrets client with InstancePrincipalConfigurationProviderr: %v", err)
 				}
 			}
-			backend = backends.NewOCIVaultBackend(client)
+			backend = backends.NewOCIVaultBackend(secret_client,vault_client,v.GetString(types.EnvOCIVaultId),v.GetString(types.EnvOCIVaultCompartmentId))
 		}
 
 	case types.GCPSecretManagerbackend:

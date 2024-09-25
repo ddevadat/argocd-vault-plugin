@@ -231,6 +231,8 @@ fDGt+yaf3RaZbVwHSVLzxiXGsu1WQJde3uJeNh5c6z+5
 				"AVP_OCI_USER": "ocid1.user.oc1..aaaaaaaa",
 				"AVP_OCI_REGION": "test-region",
 				"AVP_OCI_FINGERPRINT": "test-fingerprint",
+				"AVP_OCI_VAULT_ID": "test-vault-id",
+				"AVP_OCI_VAULT_COMPARTMENT_ID": "test-vault-comp-id",
 				"AVP_OCI_KEY_FILE": `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCyDz0+WvWGmcym
 OEBQ0zhWO1Abs/UQ1v0A7kXQpTgwAFKO0SR56jJBII1VmBuctDUYkdO55FvAuhNv

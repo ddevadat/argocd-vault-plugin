@@ -5,27 +5,41 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/example/helpers"
 	ocism "github.com/oracle/oci-go-sdk/v65/secrets"
+	ocivault "github.com/oracle/oci-go-sdk/v65/vault"
 )
 
-var OCIPath, _ = regexp.Compile(`vault/(?P<vaultid>.+)/secrets/(?P<secretname>.+)`)
+var OCIPath, _ = regexp.Compile(`^ocivault`)
+var OCISecretVersion, _ = regexp.Compile(`^\d+$`)
+
+type OCISecretIface interface {
+	GetSecretBundleByName(ctx context.Context, request ocism.GetSecretBundleByNameRequest) (response ocism.GetSecretBundleByNameResponse, err error)
+}
 
 type OCIVaultIface interface {
-	GetSecretBundleByName(ctx context.Context, request ocism.GetSecretBundleByNameRequest) (response ocism.GetSecretBundleByNameResponse, err error)
+	ListSecrets(ctx context.Context, request ocivault.ListSecretsRequest) (response ocivault.ListSecretsResponse, err error)
+	ListSecretVersions(ctx context.Context, request ocivault.ListSecretVersionsRequest) (response ocivault.ListSecretVersionsResponse, err error)
 }
 
 // OCIVault is a struct for working with a OCI Vault backend
 type OCIVault struct {
-	Client OCIVaultIface
+	secretClient OCISecretIface
+	vaultClient OCIVaultIface
+	vaultId string
+	compartmentId string
 }
 
 // NewOCIVaultBackend initializes a new OCI Vault backend
-func NewOCIVaultBackend(client OCIVaultIface) *OCIVault {
+func NewOCIVaultBackend(secret_client OCISecretIface,vault_client OCIVaultIface, vault_id string, compartment_id string ) *OCIVault {
 	return &OCIVault{
-		Client: client,
+		secretClient: secret_client,
+		vaultClient: vault_client,
+		vaultId: vault_id,
+		compartmentId: compartment_id,
 	}
 }
 
@@ -34,42 +48,113 @@ func (oci *OCIVault) Login() error {
 	return nil
 }
 
+
+// Iterate Secret Version
+func (oci *OCIVault) CheckSecretVersion(secret_version_req ocivault.ListSecretVersionsRequest, version int64 ) (bool,error) {
+
+	version_found := false
+
+	listSecretVersionFunc := func(request ocivault.ListSecretVersionsRequest) (ocivault.ListSecretVersionsResponse, error) {
+		return oci.vaultClient.ListSecretVersions(context.Background(), request)
+	}
+
+	for r, err := listSecretVersionFunc(secret_version_req); ; r, err = listSecretVersionFunc(secret_version_req) {
+		if err != nil{
+			return version_found,err
+		}
+
+		for _, secret_ver_summary := range r.Items {
+			if secret_ver_summary.VersionNumber != nil && *secret_ver_summary.VersionNumber == version {
+					version_found=true
+					break
+				}
+		}
+
+		if r.OpcNextPage != nil && !version_found {
+			// if there are more items in next page, fetch items from next page
+			secret_version_req.Page = r.OpcNextPage
+		} else {
+			// no more result, break the loop
+			break
+		}
+	}
+
+	return version_found,nil
+}
+
 // GetSecrets gets secrets from OCI Vault and returns the formatted data
 // For OCI  Vault, the path is of format `vault/vaultid/secrets/secretname`
 func (oci *OCIVault) GetSecrets(kvpath string, version string, annotations map[string]string) (map[string]interface{}, error) {
-
 	matches := OCIPath.FindStringSubmatch(kvpath)
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("path is not in the correct format (vault/<vaultid>/secrets/<secretname>) for OCI vault: %s", kvpath)
-	}
-	vaultId := matches[OCIPath.SubexpIndex("vaultid")]
-	secretName := matches[OCIPath.SubexpIndex("secretname")]
-
-	req := ocism.GetSecretBundleByNameRequest{
-		VaultId:    common.String(vaultId),
-		SecretName: common.String(secretName)}
-
-	if version != "" {
-		isPositiveInteger, _ := regexp.MatchString(`^\d+$`, version)
-		if !isPositiveInteger {
-			return nil, fmt.Errorf("version string must contain only positive integers")
-		}
-		secret_version, err := strconv.ParseInt(version, 10, 64)
-		helpers.FatalIfError(err)
-		req.VersionNumber = common.Int64(secret_version)
-	} else {
-		req.Stage = ocism.GetSecretBundleByNameStageLatest
+		return nil, fmt.Errorf("path is not in the correct format (ocivault/) for OCI vault: %s", kvpath)
 	}
 
-	resp, err := oci.Client.GetSecretBundleByName(context.Background(), req)
-	helpers.FatalIfError(err)
+	list_secrets_req := ocivault.ListSecretsRequest{
+		CompartmentId: common.String(oci.compartmentId),
+		SortBy:         ocivault.ListSecretsSortByName,
+		VaultId:        common.String(oci.vaultId),
+		Limit:          common.Int(100),
+		LifecycleState: ocivault.SecretSummaryLifecycleStateActive,
+		SortOrder:      ocivault.ListSecretsSortOrderDesc}
+
+	listSecretsFunc := func(request ocivault.ListSecretsRequest) (ocivault.ListSecretsResponse, error) {
+		return oci.vaultClient.ListSecrets(context.Background(), request)
+	}
 
 	data := make(map[string]interface{})
 
-	secretContent := resp.SecretBundle.SecretBundleContent.(ocism.Base64SecretBundleContentDetails)
-	encodedSecret := *secretContent.Content
+	for r, err := listSecretsFunc(list_secrets_req); ; r, err = listSecretsFunc(list_secrets_req) {
+		helpers.FatalIfError(err)
 
-	data[secretName] = string(encodedSecret)
+		for _, secret := range r.Items {
+			req := ocism.GetSecretBundleByNameRequest{
+				VaultId:       common.String(oci.vaultId),
+				SecretName:    common.String(*secret.SecretName)}
+
+			if version != "" && !strings.EqualFold(version, "latest") {
+				isPositiveInteger := OCISecretVersion.MatchString(version)
+				if !isPositiveInteger {
+					return nil, fmt.Errorf("version string must contain only positive integers")
+				}
+				secret_version, err := strconv.ParseInt(version, 10, 64)
+				helpers.FatalIfError(err)
+
+				list_secret_version_req := ocivault.ListSecretVersionsRequest{
+					SecretId:     common.String(*secret.Id),
+					SortBy:       ocivault.ListSecretVersionsSortByVersionNumber,
+					SortOrder:    ocivault.ListSecretVersionsSortOrderAsc,
+					Limit:        common.Int(100)}
+				
+				version_found,err := oci.CheckSecretVersion(list_secret_version_req,secret_version)
+				helpers.FatalIfError(err)
+				if version_found {
+					req.VersionNumber = common.Int64(secret_version)
+				} else{
+					req.Stage = ocism.GetSecretBundleByNameStageLatest
+				}
+			} else {
+				req.Stage = ocism.GetSecretBundleByNameStageLatest
+			}
+
+			resp, err := oci.secretClient.GetSecretBundleByName(context.Background(), req)
+			helpers.FatalIfError(err)
+
+			secretContent := resp.SecretBundle.SecretBundleContent.(ocism.Base64SecretBundleContentDetails)
+			encodedSecret := *secretContent.Content
+
+			data[*secret.SecretName] = string(encodedSecret)
+	}
+
+		if r.OpcNextPage != nil {
+			// if there are more items in next page, fetch items from next page
+			list_secrets_req.Page = r.OpcNextPage
+		} else {
+			// no more result, break the loop
+			break
+		}
+	}
+
 	return data, nil
 }
 

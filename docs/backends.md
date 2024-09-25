@@ -498,6 +498,8 @@ data:
 For API Key based Authentication, these are the required parameters:
 ```
 AVP_TYPE: ocivault
+AVP_OCI_VAULT_ID: "ocid1.tenancy.oc1..aaaaaaaa",
+AVP_OCI_VAULT_COMPARTMENT_ID: "ocid1.compartment.oc1..aaaaaaa",
 AVP_OCI_TENANCY": "ocid1.tenancy.oc1..aaaaaaaa"
 AVP_OCI_USER": "ocid1.user.oc1..aaaaaaaa"
 AVP_OCI_REGION": "test-region"
@@ -529,9 +531,20 @@ For OCI, `path` format is `vault/<vaultocid>/secrets/<secretname>`
 These are the parameters for OCI:
 ```
 AVP_TYPE: ocivault
+AVP_OCI_VAULT_ID: "ocid1.tenancy.oc1..aaaaaaaa",
+AVP_OCI_VAULT_COMPARTMENT_ID: "ocid1.compartment.oc1..aaaaaaa",
 ```
 
 ##### Examples
+
+Suppose the given OCI vault has 2 secrets with different number of password versions
+
+| Secret Name                       |  Password Value and Versions                                                                                                                                        |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| postgres-password          | pg-password2 -- > version 2:latest <br>pg-password1 -- > version 1                                                                                                                          |
+| mysql-password        | mysql-password3 -- > version 3:latest <br>mysql-password2 -- > version 2 <br>mysql-password1 -- > version 1                                                |
+
+
 
 ###### Path Annotation
 
@@ -541,10 +554,11 @@ apiVersion: v1
 metadata:
   name: test-secret
   annotations:
-    avp.kubernetes.io/path: "vault/ocid1.vault.aaaaa/secrets/demo-secret"
+    avp.kubernetes.io/path: "ocivault"
 type: Opaque
 data:
-  password: <demo-secret>
+  POSTGRES_PASSWORD: <postgres-password>      ## This will evaluate to the b64encoded value of pg-password2
+  MYSQL_PASSWORD: <mysql-password>            ## This will evaluate to the b64encoded value of mysql-password3
 ```
 
 ###### Inline Path
@@ -556,8 +570,9 @@ metadata:
   name: test-secret
 type: Opaque
 data:
-  password: <path:vault/ocid1.vault.aaaaa/secrets/demo-secret#demo-secret
-```
+  POSTGRES_PASSWORD: <path:ocivault#postgres-password>  ## This will evaluate to the b64encoded value of pg-password2
+  MYSQL_PASSWORD: <path:ocivault#mysql-password>        ## This will evaluate to the b64encoded value of mysql-password3
+``` 
 
 
 ###### Versioned secrets
@@ -568,13 +583,48 @@ apiVersion: v1
 metadata:
   name: test-secret
   annotations:
-    avp.kubernetes.io/path: "vault/ocid1.vault.aaaaa/secrets/demo-secret"
+    avp.kubernetes.io/path: "ocivault"
     avp.kubernetes.io/secret-version: "1"
 type: Opaque
 data:
-  current-password: <demo-secret>
-  current-password-again: <path:vault/ocid1.vault.aaaaa/secrets/demo-secret#demo-secret#1
-  password-old: <path:vault/ocid1.vault.aaaaa/secrets/demo-secret#demo-secret#2
+  POSTGRES_PASSWORD: <path:ocivault#postgres-password>  ## This will evaluate to the b64encoded value of pg-password1
+  MYSQL_PASSWORD: <path:ocivault#mysql-password#2>      ## This will evaluate to the b64encoded value of mysql-password2
+```
+
+###### Versioned secrets 
+
+This is an edge case where if the annotated secret-version doesn't exist for a secret, it will return latest version for that secret.
+In the below case version3 doesn't exists for postgres-password secret, so it will return the latest version for that secret.
+
+
+```yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: test-secret
+  annotations:
+    avp.kubernetes.io/path: "ocivault"
+    avp.kubernetes.io/secret-version: "3"
+type: Opaque
+data:
+  POSTGRES_PASSWORD: <path:ocivault#postgres-password>  ## This will evaluate to the b64encoded value of pg-password2
+  MYSQL_PASSWORD: <path:ocivault#mysql-password#2>      ## This will evaluate to the b64encoded value of mysql-password2
+```
+
+###### Latest Versioned secrets
+
+```yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: test-secret
+  annotations:
+    avp.kubernetes.io/path: "ocivault"
+    avp.kubernetes.io/secret-version: "latest"
+type: Opaque
+data:
+  POSTGRES_PASSWORD: <path:ocivault#postgres-password>  ## This will evaluate to the b64encoded value of pg-password2
+  MYSQL_PASSWORD: <path:ocivault#mysql-password#2>      ## This will evaluate to the b64encoded value of mysql-password2
 ```
 
 ### SOPS

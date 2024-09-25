@@ -96,6 +96,8 @@ We also support these AVP specific variables:
 | AVP_OCI_FINGERPRINT                 | OCI Vault user fingerprint                         | Only valid with `TYPE` `ocivault`                                                                                                                                   |
 | AVP_OCI_KEY_FILE                 | OCI Vault api private key                         | Only valid with `TYPE` `ocivault`                                                                                                                                   |
 | AVP_OCI_KEY_PASSPHRASE                 | OCI Vault api private key passphrase                        | Only valid with `TYPE` `ocivault`                                                                                                                                   |
+| AVP_OCI_VAULT_ID                 | OCI Vault ocid                        | Only valid with `TYPE` `ocivault`                                                                                                                                   |
+| AVP_OCI_VAULT_COMPARTMENT_ID                 | OCI Vault compartment ocid                        | Only valid with `TYPE` `ocivault`                                                                                                                                   |
 ### Full List of Supported Annotation
 
 We support several different annotations that can be used inside a kubernetes resource. These annotations will override any corresponding configuration set via Environment Variable or Configuration File.
