@@ -498,7 +498,7 @@ data:
 For API Key based Authentication, these are the required parameters:
 ```
 AVP_TYPE: ocivault
-AVP_OCI_VAULT_ID: "ocid1.tenancy.oc1..aaaaaaaa"
+AVP_OCI_VAULT_ID: "ocid1.vault.oc1..."
 AVP_OCI_VAULT_COMPARTMENT_ID: "ocid1.compartment.oc1..aaaaaaa"
 AVP_OCI_TENANCY": "ocid1.tenancy.oc1..aaaaaaaa"
 AVP_OCI_USER": "ocid1.user.oc1..aaaaaaaa"
@@ -531,7 +531,7 @@ For OCI, `path` format is `vault/<vaultocid>/secrets/<secretname>`
 These are the parameters for OCI:
 ```
 AVP_TYPE: ocivault
-AVP_OCI_VAULT_ID: "ocid1.tenancy.oc1..aaaaaaaa"
+AVP_OCI_VAULT_ID: "ocid1.vault.oc1..."
 AVP_OCI_VAULT_COMPARTMENT_ID: "ocid1.compartment.oc1..aaaaaaa"
 ```
 
