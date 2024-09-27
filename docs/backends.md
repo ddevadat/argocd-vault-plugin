@@ -526,7 +526,7 @@ Refer to the [Use Instance Principal authentication](https://docs.oracle.com/en-
 Allow dynamic-group <dynamic-group-name> to inspect secret-family in compartment <compartment-name>
 ```
 
-For OCI, `path` format is `vault/<vaultocid>/secrets/<secretname>`
+For OCI, `path` format is `ocivault`
 
 These are the parameters for OCI:
 ```
