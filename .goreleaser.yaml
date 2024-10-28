@@ -1,5 +1,5 @@
 project_name: "argocd-vault-plugin"
-
+version: 2
 builds:
   - binary: "argocd-vault-plugin"
     flags: "-trimpath"
