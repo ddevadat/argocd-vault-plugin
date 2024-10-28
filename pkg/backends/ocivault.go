@@ -13,7 +13,7 @@ import (
 	ocivault "github.com/oracle/oci-go-sdk/v65/vault"
 )
 
-var OCIPath, _ = regexp.Compile(`^ocivault`)
+var OCIPath, _ = regexp.Compile(`^ocivault(?:/(.+))?$`)
 var OCISecretVersion, _ = regexp.Compile(`^\d+$`)
 
 type OCISecretIface interface {
@@ -83,17 +83,25 @@ func (oci *OCIVault) CheckSecretVersion(secret_version_req ocivault.ListSecretVe
 }
 
 // GetSecrets gets secrets from OCI Vault and returns the formatted data
-// For OCI  Vault, the path is of format `vault/vaultid/secrets/secretname`
+// For OCI  Vault, the path is of format `ocivault/secretname`
+
 func (oci *OCIVault) GetSecrets(kvpath string, version string, annotations map[string]string) (map[string]interface{}, error) {
+
+	var secretName *string = nil
 	matches := OCIPath.FindStringSubmatch(kvpath)
 	if len(matches) == 0 {
 		return nil, fmt.Errorf("path is not in the correct format (ocivault/) for OCI vault: %s", kvpath)
 	}
 
+	if len(matches) > 1 && matches[1] != "" {
+		secretName = &matches[1] // Capture secret name if it exists
+	} 
+
 	list_secrets_req := ocivault.ListSecretsRequest{
 		CompartmentId: common.String(oci.compartmentId),
 		SortBy:         ocivault.ListSecretsSortByName,
 		VaultId:        common.String(oci.vaultId),
+		Name: 			secretName,
 		Limit:          common.Int(100),
 		LifecycleState: ocivault.SecretSummaryLifecycleStateActive,
 		SortOrder:      ocivault.ListSecretsSortOrderDesc}
@@ -158,11 +166,13 @@ func (oci *OCIVault) GetSecrets(kvpath string, version string, annotations map[s
 	return data, nil
 }
 
+
 // GetIndividualSecret will get the specific secret (placeholder) from the SM backend
-// For OCI Vault, the path is of format `vault/vaultid/secrets/secretname`
+// For OCI Vault, the path is of format `ocivault/secretname`
 // So, we use GetSecrets and extract the specific placeholder we want
 func (oci *OCIVault) GetIndividualSecret(kvpath, secret, version string, annotations map[string]string) (interface{}, error) {
-	data, err := oci.GetSecrets(kvpath, version, annotations)
+	secretpath := kvpath + "/" + secret
+	data, err := oci.GetSecrets(secretpath, version, annotations)
 	if err != nil {
 		return nil, err
 	}
