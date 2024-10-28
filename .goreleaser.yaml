@@ -27,5 +27,5 @@ builds:
 archives:
   - format: binary
 
-changelog:
-  skip: true
+# changelog:
+#   skip: true
