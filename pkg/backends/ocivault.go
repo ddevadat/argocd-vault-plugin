@@ -43,7 +43,7 @@ func NewOCIVaultBackend(secret_client OCISecretIface,vault_client OCIVaultIface,
 	}
 }
 
-// Login does nothing as a "login" is handled on the instantiation of the aws sdk
+// Login does nothing as a "login" is handled on the instantiation of the oci sdk
 func (oci *OCIVault) Login() error {
 	return nil
 }
